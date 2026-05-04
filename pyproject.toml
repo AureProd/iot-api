@@ -1,0 +1,18 @@
+[project]
+name = "iot_api"
+version = "0.1.0"
+description = "Google Smart Home API"
+requires-python = ">=3.12,<=3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic>=2.12.5",
+    "pyjwt>=2.12.1",
+    "redis>=7.4.0",
+    "python-multipart>=0.0.24",
+    "cryptography>=46.0.6",
+    "aiomqtt>=2.5.1",
+]
+
+[dependency-groups]
+dev = []

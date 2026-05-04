@@ -1,0 +1,10 @@
+services:
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    environment:
+      - APP_ENV=dev
+    volumes:
+      - ./iot_api:/app/iot_api
