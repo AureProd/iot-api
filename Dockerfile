@@ -25,17 +25,16 @@ WORKDIR /app
 
 # Copier projet et fichiers uv
 COPY pyproject.toml uv.lock ./
-COPY ./iot_api ./iot_api
 
 # Installer la venv + package
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --package iot_api --no-editable
+    uv sync --frozen --no-dev --no-install-project --package iot_api
 
 FROM builder AS dev
 
 # Installer uv + package avec dev dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --all-groups --package iot_api --no-editable
+    uv sync --frozen --all-groups --no-install-project --package iot_api
 
 COPY --from=cert-gen /certs /app/certs
 
