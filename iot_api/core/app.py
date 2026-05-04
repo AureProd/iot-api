@@ -43,5 +43,5 @@ app.include_router(router)
 logger.info("IOT API started and ready.")
 
 logger.info("Started devices:")
-for device_id, device_name, device_type in config.DEVICES:
-    logger.info(f"Device '{device_name}' with ID '{device_id}' and type '{device_type}'")
+for device in config.DEVICES.values():
+    logger.info(f"Device '{device.name}' with ID '{device.id}' and type '{device.type}'")

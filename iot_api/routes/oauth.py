@@ -1,16 +1,9 @@
-from fastapi import APIRouter, Depends, Form, HTTPException
+from fastapi import APIRouter, Depends, Form
 from fastapi.responses import RedirectResponse
-from iot_api.clients.redis import RedisClient
-import uuid
 
-from iot_api.core import config
-from iot_api.dependencies.redis import get_redis_client
-from iot_api.helpers.jwt import generate_jwt
-from iot_api.services.oauth import get_user_from_oauth_code, get_user_from_refresh_token, save_oauth_code, save_refresh_token
+from iot_api.services.oauth import OAuthService
 
 router = APIRouter(prefix="/auth", tags=["OAUTH"])
-
-redis_manager = RedisClient()
 
 @router.get("/authorize")
 async def authorize(
@@ -18,14 +11,16 @@ async def authorize(
     redirect_uri: str, 
     state: str, 
     response_type: str,
-    redis_client: RedisClient = Depends(get_redis_client),
+    oauth_service: OAuthService = Depends(OAuthService)
 ):
-    if client_id != config.OAUTH_CLIENT_ID:
-        raise HTTPException(status_code=400, detail="Invalid Client ID")
+    """
+    Handles the initial OAuth2 authorization request.
+    Delegates validation and code generation to the OAuthService.
+    """
+    # Let the service handle the business logic
+    oauth_code = await oauth_service.process_authorization_request(client_id)
     
-    oauth_code = str(uuid.uuid4())
-    await save_oauth_code(redis_client, oauth_code, config.ADMIN_EMAIL) 
-    
+    # Return the HTTP redirect
     return RedirectResponse(url=f"{redirect_uri}?code={oauth_code}&state={state}")
 
 @router.post("/token")
@@ -35,33 +30,19 @@ async def token_exchange(
     client_secret: str = Form(...),
     code: str = Form(None),
     refresh_token: str = Form(None),
-    redis_client: RedisClient = Depends(get_redis_client),
+    oauth_service: OAuthService = Depends(OAuthService)
 ):
-    if client_id != config.OAUTH_CLIENT_ID or client_secret != config.OAUTH_CLIENT_SECRET:
-        raise HTTPException(status_code=401, detail="Invalid Client Credentials")
+    """
+    Handles the token exchange.
+    Delegates all validations and token generation to the OAuthService.
+    """
+    # The service returns the exact dictionary payload needed for the response
+    token_payload = await oauth_service.process_token_exchange(
+        grant_type=grant_type,
+        client_id=client_id,
+        client_secret=client_secret,
+        code=code,
+        refresh_token=refresh_token,
+    )
 
-    user_email = None
-
-    if grant_type == "authorization_code":
-        user_email = await get_user_from_oauth_code(redis_client, code)
-            
-    elif grant_type == "refresh_token":
-        user_email = await get_user_from_refresh_token(redis_client, refresh_token)
-        
-    else:
-        raise HTTPException(status_code=400, detail="Unsupported grant type")
-    
-    if user_email != config.ADMIN_EMAIL:
-        raise HTTPException(status_code=401)
-
-    # Générer nouveaux tokens
-    new_access_token = generate_jwt(user_email)
-    new_refresh_token = str(uuid.uuid4())
-    await save_refresh_token(redis_client, new_refresh_token, user_email)
-
-    return {
-        "token_type": "Bearer",
-        "access_token": new_access_token,
-        "refresh_token": new_refresh_token,
-        "expires_in": 3600
-    }
+    return token_payload

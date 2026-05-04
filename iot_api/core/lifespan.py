@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from iot_api.clients.mqtt import MQTTClient
 from iot_api.clients.redis import RedisClient
 from iot_api.core import config
-from iot_api.services.status import handle_led_status, handle_coffee_maker_run_status, handle_coffee_maker_ready_status
+from iot_api.services.devices.registry import DeviceRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +26,14 @@ async def app_lifespan(app: FastAPI):
             app.state.mqtt.connect()
         )
         
-        # Add MQTT topics subscribers
-        await app.state.mqtt.subscribe(config.MQTT_LED_STATUS_TOPIC.format("+"), handle_led_status(app.state.redis))
-        await app.state.mqtt.subscribe(config.MQTT_COFFEE_MAKER_RUN_STATUS_TOPIC.format("+"), handle_coffee_maker_run_status(app.state.redis))
-        await app.state.mqtt.subscribe(config.MQTT_COFFEE_MAKER_READY_STATUS_TOPIC.format("+"), handle_coffee_maker_ready_status(app.state.redis))
+        # Dynamically setup MQTT subscriptions for all registered device types
+        # We extract unique device types from our Pydantic config
+        unique_device_types = set(device.type for device in config.DEVICES.values())
+        
+        for device_type in unique_device_types:
+            strategy = DeviceRegistry.get_strategy(device_type)
+            await strategy.setup_subscriptions(app.state.mqtt, app.state.redis)
+            logger.info(f"Subscribed to MQTT topics for device type: {device_type}")
         
         yield
     except Exception as exc:

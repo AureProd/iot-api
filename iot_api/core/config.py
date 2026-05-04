@@ -1,5 +1,7 @@
 import os
 
+from iot_api.schemas.devices import DeviceConfig
+
 APP_ENV = os.getenv("APP_ENV", "prod")
 APP_URL = os.getenv("APP_URL", "https://jbhuet.fr")
 
@@ -37,9 +39,14 @@ REDIS_LED_STATUS_TOPIC = "led:status:{}"
 REDIS_COFFEE_MAKER_RUN_STATUS_TOPIC = "coffee:run:status:{}"
 REDIS_COFFEE_MAKER_READY_STATUS_TOPIC = "coffee:ready:status:{}"
 
-DEVICES = [
-    ("led-01", "PC LED", "led"),
-    # ("led-02", "BOOK LED", "led"),
-    ("led-03", "COOK LED", "led"), 
-    ("coffee-maker-01", "COFFEE MAKER", "coffee-maker"),  
-]
+# Dictionary comprehension to create a fast-lookup dictionary (O(1) access time) keyed by device ID.
+# Pydantic models expect keyword arguments (id=..., name=..., type=...) for instantiation.
+DEVICES = {
+    device.id: device
+    for device in [
+        DeviceConfig(id="led-01", name="PC LED", type="led"),
+        # DeviceConfig(id="led-02", name="BOOK LED", type="led"),
+        DeviceConfig(id="led-03", name="COOK LED", type="led"),
+        DeviceConfig(id="coffee-maker-01", name="COFFEE MAKER", type="coffee-maker"),
+    ]
+}
