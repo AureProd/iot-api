@@ -1,7 +1,7 @@
 [project]
 name = "iot_api"
-version = "0.1.0"
-description = "Google Smart Home API"
+version = "1.0.0"
+description = "Google Smart Home IOT API"
 requires-python = ">=3.12,<=3.13"
 dependencies = [
     "fastapi",
@@ -15,4 +15,76 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = []
+dev = [
+    "pre-commit>=3.7.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["iot_api"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 120
+
+[tool.ruff]
+line-length = 120
+fix = true
+
+[tool.ruff.lint]
+# - E501 line lengths: yapf and isort already handle them
+# - B905 zip(*, strict=True): strict was introduced in Python 3.10+
+ignore = ["E501", "B905"]
+
+[tool.ruff.lint.per-file-ignores]
+# do not check unused imports in __init__.py files (they expose module features)
+"__init__.py" = ["E402", "F401"]
+
+[tool.mypy]
+ignore_missing_imports = true
+explicit_package_bases = true
+strict_optional = true
+plugins = ["sqlalchemy.ext.mypy.plugin", "pydantic.mypy"]
+check_untyped_defs = true
+
+[tool.isort]
+py_version=38
+# maintain consistency with other quality tools
+line_length = 120
+# consistency with ruff-format: mode 3
+# from third_party import (
+#     lib1,
+#     lib2,
+#     [...]
+#     libn,
+# )
+multi_line_output = 3
+include_trailing_comma = true
+# TESTS->known_tests: create a specific section for imports of tests modules
+# (this is the reason why isort is still used alongside ruff-format)
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER", "TESTS"]
+known_tests = ["tests"]
+
+[tool.semantic_release.branches.main]
+match = "main"
+prerelease = false
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = [
+    "feat",
+    "fix",
+    "ci",
+    "doc",
+    "refactor",
+    "style",
+    "clean",
+    "test",
+    "build"
+]
+minor_tags = ["feat"]
+patch_tags = ["fix", "doc", "ci", "test", "refactor", "style", "clean", "build"]
+
+[tool.semantic_release.remote]
+ignore_token_for_push = true
