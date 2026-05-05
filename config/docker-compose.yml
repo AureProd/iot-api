@@ -17,10 +17,19 @@ services:
     networks:
       - reverse_proxy
     depends_on:
-      - mqtt
-      - redis
+      mqtt:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./mqtt/certs/ca.crt:/mqtt/certs/ca.crt:ro
+    healthcheck:
+      # On utilise python car l'image python:3.12-slim n'inclut pas forcément curl ou wget par défaut.
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:80/api/iot/docs')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   mqtt:
     restart: always
@@ -50,15 +59,27 @@ services:
     command: ["/usr/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf"]
     networks:
       - reverse_proxy
+    healthcheck:
+      # Teste la connexion TLS sur le port 8883 en utilisant les credentials de l'API injectés.
+      test: ["CMD-SHELL", "mosquitto_pub -h 127.0.0.1 -p 8883 --cafile /mosquitto/certs/ca.crt --insecure -u ${IOT_API_USERNAME} -P ${IOT_API_PASSWORD} -t 'healthcheck' -m 'ping' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   redis:
     image: redis:7-alpine
     restart: always
-    # Only internal network access
     networks:
+      # Only internal network access
       - reverse_proxy
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   reverse_proxy:

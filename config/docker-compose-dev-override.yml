@@ -6,6 +6,9 @@ services:
       target: dev
     volumes:
       - ./iot_api:/app/iot_api
+    depends_on:
+      rp:
+        condition: service_healthy
 
   rp:
     restart: always
@@ -20,6 +23,12 @@ services:
       - 127.0.0.1:1${APP_PORT}:8080
     networks:
       - reverse_proxy
+    healthcheck:
+      # On teste simplement si le port 8080 répond (Dashboard/API)
+      test: ["CMD-SHELL", "nc -z localhost 8080 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 networks:
   reverse_proxy:
