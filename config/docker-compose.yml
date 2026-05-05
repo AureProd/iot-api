@@ -4,7 +4,7 @@ services:
     build: .
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.iot-api.rule=Host(`jbhuet.fr`) && PathPrefix(`/api/iot`)"
+      - "traefik.http.routers.iot-api.rule=Host(`${APP_HOST:-jbhuet.fr}`) && PathPrefix(`/api/iot`)"
     environment:
       - APP_ENV
       - APP_SCHEME
@@ -62,6 +62,7 @@ services:
 
 networks:
   reverse_proxy:
+    name: reverse_proxy
     external: true
 
 volumes:

@@ -23,4 +23,5 @@ services:
 
 networks:
   reverse_proxy:
+    name: reverse_proxy
     external: false
