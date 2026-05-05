@@ -5,13 +5,14 @@ from iot_api.services.oauth import OAuthService
 
 router = APIRouter(prefix="/auth", tags=["OAUTH"])
 
+
 @router.get("/authorize")
 async def authorize(
-    client_id: str, 
-    redirect_uri: str, 
-    state: str, 
+    client_id: str,
+    redirect_uri: str,
+    state: str,
     response_type: str,
-    oauth_service: OAuthService = Depends(OAuthService)
+    oauth_service: OAuthService = Depends(OAuthService),
 ):
     """
     Handles the initial OAuth2 authorization request.
@@ -19,9 +20,10 @@ async def authorize(
     """
     # Let the service handle the business logic
     oauth_code = await oauth_service.process_authorization_request(client_id)
-    
+
     # Return the HTTP redirect
     return RedirectResponse(url=f"{redirect_uri}?code={oauth_code}&state={state}")
+
 
 @router.post("/token")
 async def token_exchange(
@@ -30,7 +32,7 @@ async def token_exchange(
     client_secret: str = Form(...),
     code: str = Form(None),
     refresh_token: str = Form(None),
-    oauth_service: OAuthService = Depends(OAuthService)
+    oauth_service: OAuthService = Depends(OAuthService),
 ):
     """
     Handles the token exchange.

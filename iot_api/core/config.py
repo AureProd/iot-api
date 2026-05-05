@@ -20,8 +20,8 @@ REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 
-JWT_PRIVATE_KEY_PATH="/app/certs/private.pem"
-JWT_PUBLIC_KEY_PATH="/app/certs/public.pem"
+JWT_PRIVATE_KEY_PATH = "/app/certs/private.pem"
+JWT_PUBLIC_KEY_PATH = "/app/certs/public.pem"
 
 MQTT_HOST = os.getenv("MQTT_HOST", "mqtt")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 8883))
@@ -29,14 +29,14 @@ MQTT_PORT = int(os.getenv("MQTT_PORT", 8883))
 MQTT_USERNAME = os.getenv("IOT_API_USERNAME")
 MQTT_PASSWORD = os.getenv("IOT_API_PASSWORD")
 
-MQTT_CA_CERT_PATH="/mqtt/certs/ca.crt"
+MQTT_CA_CERT_PATH = "/mqtt/certs/ca.crt"
 
-MQTT_LED_COMMAND_TOPIC = "home/led/{}/set"  
+MQTT_LED_COMMAND_TOPIC = "home/led/{}/set"
 MQTT_LED_STATUS_TOPIC = "home/led/{}/status"
-  
-MQTT_COFFEE_MAKER_COMMAND_TOPIC = "home/coffee/{}/set"  
-MQTT_COFFEE_MAKER_RUN_STATUS_TOPIC = "home/coffee/{}/run/status" 
-MQTT_COFFEE_MAKER_READY_STATUS_TOPIC = "home/coffee/{}/ready/status"  
+
+MQTT_COFFEE_MAKER_COMMAND_TOPIC = "home/coffee/{}/set"
+MQTT_COFFEE_MAKER_RUN_STATUS_TOPIC = "home/coffee/{}/run/status"
+MQTT_COFFEE_MAKER_READY_STATUS_TOPIC = "home/coffee/{}/ready/status"
 
 REDIS_OAUTH_CODE_TOPIC = "oauth:code:{}"
 REDIS_OAUTH_REFRESH_TOPIC = "oauth:refresh:{}"
@@ -45,14 +45,13 @@ REDIS_LED_STATUS_TOPIC = "led:status:{}"
 REDIS_COFFEE_MAKER_RUN_STATUS_TOPIC = "coffee:run:status:{}"
 REDIS_COFFEE_MAKER_READY_STATUS_TOPIC = "coffee:ready:status:{}"
 
+# DeviceConfig(id="led-02", name="BOOK LED", type="led"),
+DEVICES_LIST: list[DeviceConfig] = [
+    DeviceConfig(id="led-01", name="PC LED", type="led"),
+    DeviceConfig(id="led-03", name="COOK LED", type="led"),
+    DeviceConfig(id="coffee-maker-01", name="COFFEE MAKER", type="coffee-maker"),
+]
+
 # Dictionary comprehension to create a fast-lookup dictionary (O(1) access time) keyed by device ID.
 # Pydantic models expect keyword arguments (id=..., name=..., type=...) for instantiation.
-DEVICES = {
-    device.id: device
-    for device in [
-        DeviceConfig(id="led-01", name="PC LED", type="led"),
-        # DeviceConfig(id="led-02", name="BOOK LED", type="led"),
-        DeviceConfig(id="led-03", name="COOK LED", type="led"),
-        DeviceConfig(id="coffee-maker-01", name="COFFEE MAKER", type="coffee-maker"),
-    ]
-}
+DEVICES: dict[str, DeviceConfig] = {device.id: device for device in DEVICES_LIST}

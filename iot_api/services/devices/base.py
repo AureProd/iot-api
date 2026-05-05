@@ -7,12 +7,13 @@ from iot_api.clients.redis import RedisClient
 
 logger = logging.getLogger(__name__)
 
+
 class DeviceStrategy(ABC):
     """
     Abstract base class for all device types.
     Enforces a strict contract that every new device must follow.
     """
-    
+
     @abstractmethod
     def get_config(self, device_id: str, device_name: str) -> dict[str, Any]:
         """
@@ -28,13 +29,15 @@ class DeviceStrategy(ABC):
         pass
 
     @abstractmethod
-    async def execute_command(self, redis_client: RedisClient, mqtt_client: MQTTClient, device_id: str, status: bool) -> None:
+    async def execute_command(
+        self, redis_client: RedisClient, mqtt_client: MQTTClient, device_id: str, status: bool
+    ) -> None:
         """
         Executes an On/Off command to change the device state.
         Should raise a ValueError with a specific error code (e.g., 'needsWater') if blocked.
         """
         pass
-    
+
     @abstractmethod
     async def setup_subscriptions(self, mqtt_client: MQTTClient, redis_client: RedisClient) -> None:
         """

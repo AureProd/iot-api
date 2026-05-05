@@ -36,17 +36,17 @@ if [ ! -f "$CERTS_DIR/server.crt" ] || [ ! -f "$CERTS_DIR/ca.crt" ]; then
         -keyout "$CERTS_DIR/ca.key" \
         -out "$CERTS_DIR/ca.crt" \
         -subj "/C=FR/ST=Region/L=City/O=IoT_Project/CN=IoT_Root_CA" -nodes
-    
+
     # 2. Générer la clé privée du serveur MQTT
     openssl genrsa -out "$CERTS_DIR/server.key" 2048
-    
+
     # 3. Créer la demande de signature de certificat (CSR)
     # Le Common Name (CN) correspond au domaine défini dans ton infrastructure
     openssl req -new \
         -out "$CERTS_DIR/server.csr" \
         -key "$CERTS_DIR/server.key" \
         -subj "/C=FR/ST=Region/L=City/O=IoT_Project/CN=${APP_HOST}"
-    
+
     # 4. Signer le certificat du serveur avec notre propre CA
     openssl x509 -req \
         -in "$CERTS_DIR/server.csr" \
@@ -55,10 +55,10 @@ if [ ! -f "$CERTS_DIR/server.crt" ] || [ ! -f "$CERTS_DIR/ca.crt" ]; then
         -CAcreateserial \
         -out "$CERTS_DIR/server.crt" \
         -days 3650
-    
+
     # 5. Nettoyage et permissions
     rm "$CERTS_DIR/server.csr" "$CERTS_DIR/ca.srl"
-    
+
     # On s'assure que le conteneur Mosquitto pourra lire ces fichiers
     chmod 644 "$CERTS_DIR/ca.crt" "$CERTS_DIR/server.crt" "$CERTS_DIR/server.key"
 fi

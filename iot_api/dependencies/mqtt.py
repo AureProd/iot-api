@@ -1,5 +1,3 @@
-
-
 from fastapi import Request
 
 from iot_api.clients.mqtt import MQTTClient
