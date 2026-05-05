@@ -3,7 +3,12 @@ import os
 from iot_api.schemas.devices import DeviceConfig
 
 APP_ENV = os.getenv("APP_ENV", "prod")
-APP_URL = os.getenv("APP_URL", "https://jbhuet.fr")
+
+APP_SCHEME = os.getenv("APP_SCHEME", "https")
+APP_HOST = os.getenv("APP_HOST", "jbhuet.fr")
+APP_PORT = os.getenv("APP_PORT", "443")
+
+APP_URL = f"{APP_SCHEME}://{APP_HOST}:{APP_PORT}"
 
 ADMIN_EMAIL = "jbhuet0@gmail.com"
 
@@ -20,8 +25,9 @@ JWT_PUBLIC_KEY_PATH="/app/certs/public.pem"
 
 MQTT_HOST = os.getenv("MQTT_HOST", "mqtt")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 8883))
-MQTT_USERNAME = os.getenv("MQTT_USERNAME")
-MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
+
+MQTT_USERNAME = os.getenv("IOT_API_USERNAME")
+MQTT_PASSWORD = os.getenv("IOT_API_PASSWORD")
 
 MQTT_CA_CERT_PATH="/mqtt/certs/ca.crt"
 

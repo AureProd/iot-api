@@ -1,0 +1,69 @@
+services:
+  api:
+    restart: always
+    build: .
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.iot-api.rule=Host(`jbhuet.fr`) && PathPrefix(`/api/iot`)"
+    environment:
+      - APP_ENV
+      - APP_SCHEME
+      - APP_HOST
+      - APP_PORT
+      - OAUTH_CLIENT_ID
+      - OAUTH_CLIENT_SECRET
+      - IOT_API_USERNAME
+      - IOT_API_PASSWORD
+    networks:
+      - reverse_proxy
+    depends_on:
+      - mqtt
+      - redis
+    volumes:
+      - ./mqtt/certs/ca.crt:/mqtt/certs/ca.crt:ro
+
+  mqtt:
+    restart: always
+    image: eclipse-mosquitto:2.0
+    container_name: mqtt
+    environment:
+      - IOT_API_USERNAME
+      - IOT_API_PASSWORD
+      - DEVICE_1_USERNAME
+      - DEVICE_1_PASSWORD
+      - DEVICE_2_USERNAME
+      - DEVICE_2_PASSWORD
+      - DEVICE_3_USERNAME
+      - DEVICE_3_PASSWORD
+      - DEVICE_4_USERNAME
+      - DEVICE_4_PASSWORD
+      - DEVICE_5_USERNAME
+      - DEVICE_5_PASSWORD
+    ports:
+      - "8883:8883" # MQTT TLS
+    volumes:
+      - ./mqtt/config/entrypoint.sh:/entrypoint.sh
+      - ./mqtt/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mqtt/certs:/mosquitto/certs
+      - mqtt_data:/mosquitto/data
+    entrypoint: ["/entrypoint.sh"]
+    command: ["/usr/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf"]
+    networks:
+      - reverse_proxy
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    # Only internal network access
+    networks:
+      - reverse_proxy
+    volumes:
+      - redis_data:/data
+
+networks:
+  reverse_proxy:
+    external: true
+
+volumes:
+  mqtt_data:
+  redis_data:

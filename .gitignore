@@ -1,5 +1,7 @@
 .venv
 
-docker-compose.yml
+/docker-compose.yml
 
 mqtt/certs
+
+.env
