@@ -79,7 +79,8 @@ jobs:
             export DEVICE_5_PASSWORD="${{ secrets.DEVICE_5_PASSWORD }}"
 
             cd "$PROJECT_DIR"
-            docker login ${{ inputs.registry }} -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+            # Secure login to Github Docker registry
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ inputs.registry }} -u ${{ github.actor }} --password-stdin
 
             # Generate docker compose file
             docker compose -p "prod" --project-directory . -f ./config/docker-compose.yml config > docker-compose.yml
