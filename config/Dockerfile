@@ -1,14 +1,3 @@
-# Certificate Generation ---
-FROM alpine:latest AS cert-gen
-
-RUN apk add --no-cache openssl
-
-WORKDIR /certs
-
-# Generate private key (RS256) and public key certs
-RUN openssl genrsa -out private.pem 2048 && \
-    openssl rsa -in private.pem -pubout -out public.pem
-
 FROM python:3.12-slim AS builder
 
 # Installer uv
@@ -36,8 +25,6 @@ FROM builder AS dev
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --all-groups --no-install-project --package iot_api
 
-COPY --from=cert-gen /certs /app/certs
-
 # Dev environment variables
 ENV PATH="/app/.venv/bin:$PATH" \
     APP_DEBUG=1 \
@@ -64,8 +51,6 @@ COPY --from=builder /app/.venv ./.venv
 
 # Copier le code source minimal pour uvicorn
 COPY ./iot_api ./iot_api
-
-COPY --from=cert-gen /certs /app/certs
 
 EXPOSE 80
 

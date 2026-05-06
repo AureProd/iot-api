@@ -23,7 +23,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "config/,mqtt/config/"
+          source: "config/"
           target: "/home/${{ secrets.SERVER_USER }}/projects/iot"
 
       - name: Remote SSH Deployment
@@ -34,16 +34,25 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             PROJECT_DIR="/home/${{ secrets.SERVER_USER }}/projects/iot"
-            CERTS_DIR="$PROJECT_DIR/mqtt/certs"
+            CERTS_DIR="$PROJECT_DIR/certs"
+            API_CERTS_DIR="$CERTS_DIR/api"
+            MQTT_CERTS_DIR="$CERTS_DIR/mqtt"
 
             # Generate not found MQTT certs
-            mkdir -p "$CERTS_DIR"
-            if [ ! -f "$CERTS_DIR/server.crt" ]; then
-                openssl req -new -x509 -days 3650 -nodes -out "$CERTS_DIR/ca.crt" -keyout "$CERTS_DIR/ca.key" -subj "/CN=IoT_Root_CA"
-                openssl genrsa -out "$CERTS_DIR/server.key" 2048
-                openssl req -new -key "$CERTS_DIR/server.key" -out "$CERTS_DIR/server.csr" -subj "/CN=${{ secrets.APP_HOST }}"
-                openssl x509 -req -in "$CERTS_DIR/server.csr" -CA "$CERTS_DIR/ca.crt" -CAkey "$CERTS_DIR/ca.key" -CAcreateserial -out "$CERTS_DIR/server.crt" -days 3650
-                chmod 644 "$CERTS_DIR/ca.crt" "$CERTS_DIR/server.crt" "$CERTS_DIR/server.key"
+            mkdir -p "$MQTT_CERTS_DIR"
+            if [ ! -f "$MQTT_CERTS_DIR/server.crt" ]; then
+              openssl req -new -x509 -days 3650 -nodes -out "$MQTT_CERTS_DIR/ca.crt" -keyout "$MQTT_CERTS_DIR/ca.key" -subj "/CN=IoT_Root_CA"
+              openssl genrsa -out "$MQTT_CERTS_DIR/server.key" 2048
+              openssl req -new -key "$MQTT_CERTS_DIR/server.key" -out "$MQTT_CERTS_DIR/server.csr" -subj "/CN=${{ secrets.APP_HOST }}"
+              openssl x509 -req -in "$MQTT_CERTS_DIR/server.csr" -CA "$MQTT_CERTS_DIR/ca.crt" -CAkey "$MQTT_CERTS_DIR/ca.key" -CAcreateserial -out "$MQTT_CERTS_DIR/server.crt" -days 3650
+              chmod 644 "$MQTT_CERTS_DIR/ca.crt" "$MQTT_CERTS_DIR/server.crt" "$MQTT_CERTS_DIR/server.key"
+            fi
+
+            # Generate not found JWT API certs
+            mkdir -p "$API_CERTS_DIR"
+            if [ ! -f "$API_CERTS_DIR/private.pem" ] || [ ! -f "$API_CERTS_DIR/public.pem" ]; then
+              openssl genrsa -out "$API_CERTS_DIR/private.pem" 2048
+              openssl rsa -in "$API_CERTS_DIR/private.pem" -pubout -out "$API_CERTS_DIR/public.pem"
             fi
 
             export API_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}:${{ github.sha }}"
@@ -71,8 +80,8 @@ jobs:
             # Generate docker compose file
             docker compose -p "prod" --project-directory . -f ./deploy/docker-compose.yml config > docker-compose.yml
 
-            # Clean files
-            rm -rf ./config
+            # Clean configs files
+            find ./config -mindepth 1 -maxdepth 1 ! -name 'mqtt' -exec rm -rf {} +
 
             # Pull Docker image et restart
             docker compose -f ./docker-compose.yml up --force-recreate --remove-orphans -d --wait --wait-timeout 60

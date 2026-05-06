@@ -20,8 +20,8 @@ REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 
-JWT_PRIVATE_KEY_PATH = "/app/certs/private.pem"
-JWT_PUBLIC_KEY_PATH = "/app/certs/public.pem"
+JWT_PRIVATE_KEY_PATH = "/certs/api/private.pem"
+JWT_PUBLIC_KEY_PATH = "/certs/api/public.pem"
 
 MQTT_HOST = os.getenv("MQTT_HOST", "mqtt")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 8883))
@@ -29,7 +29,7 @@ MQTT_PORT = int(os.getenv("MQTT_PORT", 8883))
 MQTT_USERNAME = os.getenv("IOT_API_USERNAME")
 MQTT_PASSWORD = os.getenv("IOT_API_PASSWORD")
 
-MQTT_CA_CERT_PATH = "/mqtt/certs/ca.crt"
+MQTT_CA_CERT_PATH = "/certs/mqtt/ca.crt"
 
 MQTT_LED_COMMAND_TOPIC = "home/led/{}/set"
 MQTT_LED_STATUS_TOPIC = "home/led/{}/status"

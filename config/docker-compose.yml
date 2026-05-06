@@ -22,7 +22,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./mqtt/certs/ca.crt:/mqtt/certs/ca.crt:ro
+      - ./certs:/certs:ro
     healthcheck:
       # On utilise python car l'image python:3.12-slim n'inclut pas forcément curl ou wget par défaut.
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:80/api/iot/docs')\" || exit 1"]
@@ -51,9 +51,9 @@ services:
     ports:
       - "8883:8883" # MQTT TLS
     volumes:
-      - ./mqtt/config/entrypoint.sh:/entrypoint.sh
-      - ./mqtt/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
-      - ./mqtt/certs:/mosquitto/certs
+      - ./config/mqtt/entrypoint.sh:/entrypoint.sh
+      - ./config/mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./certs/mqtt:/mosquitto/certs
       - mqtt_data:/mosquitto/data
     entrypoint: ["/entrypoint.sh"]
     command: ["/usr/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf"]
