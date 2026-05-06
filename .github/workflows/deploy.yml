@@ -2,10 +2,6 @@ name: Reusable Deploy
 
 on:
   workflow_call:
-    inputs:
-      image_name:
-        required: true
-        type: string
 
 jobs:
   deploy:
@@ -43,7 +39,7 @@ jobs:
                 chmod 644 "$CERTS_DIR/ca.crt" "$CERTS_DIR/server.crt" "$CERTS_DIR/server.key"
             fi
 
-            export API_IMAGE="${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ github.sha }}"
+            export API_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
             export APP_ENV="${{ vars.APP_ENV }}"
             export APP_HOST="${{ vars.APP_HOST }}"
             export APP_PORT="${{ vars.APP_PORT }}"

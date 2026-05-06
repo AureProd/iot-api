@@ -2,10 +2,6 @@ name: Reusable Build & Scan
 
 on:
   workflow_call:
-    inputs:
-      image_name:
-        required: true
-        type: string
 
 jobs:
   build:
@@ -32,12 +28,12 @@ jobs:
           file: ./config/Dockerfile
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Run Trivy scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ github.sha }}'
+          image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
