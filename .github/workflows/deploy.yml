@@ -35,6 +35,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            set -e
+
             PROJECT_DIR="/home/${{ secrets.SERVER_USER }}/projects/iot"
             CERTS_DIR="$PROJECT_DIR/certs"
             API_CERTS_DIR="$CERTS_DIR/api"
@@ -80,7 +82,7 @@ jobs:
             docker login ${{ inputs.registry }} -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
             # Generate docker compose file
-            docker compose -p "prod" --project-directory . -f ./deploy/docker-compose.yml config > docker-compose.yml
+            docker compose -p "prod" --project-directory . -f ./config/docker-compose.yml config > docker-compose.yml
 
             # Clean configs files
             find ./config -mindepth 1 -maxdepth 1 ! -name 'mqtt' -exec rm -rf {} +
@@ -88,4 +90,4 @@ jobs:
             # Pull Docker image et restart
             docker compose -f ./docker-compose.yml up --force-recreate --remove-orphans -d --wait --wait-timeout 60
 
-            echo "=== Deploy finished at $(date '+%Y-%m-%d %H:%M:%S') ==="
+            echo "Deploy finished at $(date '+%Y-%m-%d %H:%M:%S')"
