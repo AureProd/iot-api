@@ -2,6 +2,13 @@ name: Reusable Deploy
 
 on:
   workflow_call:
+    inputs:
+      image_name:
+        required: true
+        type: string
+      registry:
+        required: true
+        type: string
 
 jobs:
   deploy:
@@ -39,7 +46,7 @@ jobs:
                 chmod 644 "$CERTS_DIR/ca.crt" "$CERTS_DIR/server.crt" "$CERTS_DIR/server.key"
             fi
 
-            export API_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+            export API_IMAGE="${{ inputs.registry }}/${{ inputs.image_name }}:${{ github.sha }}"
             export APP_ENV="${{ vars.APP_ENV }}"
             export APP_HOST="${{ vars.APP_HOST }}"
             export APP_PORT="${{ vars.APP_PORT }}"
@@ -59,7 +66,7 @@ jobs:
             export DEVICE_5_PASSWORD="${{ secrets.DEVICE_5_PASSWORD }}"
 
             cd "$PROJECT_DIR"
-            docker login ${{ env.REGISTRY }} -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+            docker login ${{ inputs.registry }} -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
             # Generate docker compose file
             docker compose -p "prod" --project-directory . -f ./deploy/docker-compose.yml config > docker-compose.yml

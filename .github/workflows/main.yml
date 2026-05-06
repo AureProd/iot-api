@@ -4,10 +4,6 @@ on:
   push:
     branches: [ "main" ]
 
-env:
-  IMAGE_NAME: aureprod/iot-api
-  REGISTRY: ghcr.io
-
 jobs:
   # Call build and scan workflow
   ci:
@@ -15,10 +11,16 @@ jobs:
       contents: read
       packages: write
     uses: ./.github/workflows/build.yml
+    with:
+      image_name: aureprod/iot-api
+      registry: ghcr.io
     secrets: inherit # Transmet secret (GITHUB_TOKEN, etc.)
 
   # Call deploy workflow (only if build success)
   cd:
     needs: ci
     uses: ./.github/workflows/deploy.yml
+    with:
+      image_name: aureprod/iot-api
+      registry: ghcr.io
     secrets: inherit
