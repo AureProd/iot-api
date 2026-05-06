@@ -21,6 +21,8 @@ export APP_SCHEME="http"
 export APP_HOST="localhost"
 export APP_PORT="8080"
 
+export API_IMAGE="iot-api:${INSTANCE_NAME}"
+
 CERTS_DIR="./mqtt/certs"
 mkdir -p "$CERTS_DIR"
 
