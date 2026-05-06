@@ -8,7 +8,6 @@ repos:
     -   id: check-json
     -   id: check-added-large-files
     -   id: detect-private-key
-        exclude: "pureapi/tests/data/permissions_jwt_keys/private.pem"
     -   id: end-of-file-fixer
         exclude: ^config/mqtt/mosquitto.conf
     -   id: trailing-whitespace
