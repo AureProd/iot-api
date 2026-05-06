@@ -1,3 +1,5 @@
+![CI/CD Status](https://github.com/AureProd/iot-api/actions/workflows/main.yml/badge.svg)
+
 # IOT API
 
 IOT API to manage ESP-32 custom connected devices with Google Home tool
