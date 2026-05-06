@@ -1,0 +1,77 @@
+name: Reusable Deploy
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout for config files
+        uses: actions/checkout@v4
+
+      - name: Copy config to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "config/,mqtt/config/"
+          target: "/home/${{ secrets.SERVER_USER }}/projects/iot"
+
+      - name: Remote SSH Deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            PROJECT_DIR="/home/${{ secrets.SERVER_USER }}/projects/iot"
+            CERTS_DIR="$PROJECT_DIR/mqtt/certs"
+
+            # Generate not found MQTT certs
+            mkdir -p "$CERTS_DIR"
+            if [ ! -f "$CERTS_DIR/server.crt" ]; then
+                openssl req -new -x509 -days 3650 -nodes -out "$CERTS_DIR/ca.crt" -keyout "$CERTS_DIR/ca.key" -subj "/CN=IoT_Root_CA"
+                openssl genrsa -out "$CERTS_DIR/server.key" 2048
+                openssl req -new -key "$CERTS_DIR/server.key" -out "$CERTS_DIR/server.csr" -subj "/CN=${{ secrets.APP_HOST }}"
+                openssl x509 -req -in "$CERTS_DIR/server.csr" -CA "$CERTS_DIR/ca.crt" -CAkey "$CERTS_DIR/ca.key" -CAcreateserial -out "$CERTS_DIR/server.crt" -days 3650
+                chmod 644 "$CERTS_DIR/ca.crt" "$CERTS_DIR/server.crt" "$CERTS_DIR/server.key"
+            fi
+
+            export API_IMAGE="${{ env.REGISTRY }}/${{ inputs.image_name }}:${{ github.sha }}"
+            export APP_ENV="${{ vars.APP_ENV }}"
+            export APP_HOST="${{ vars.APP_HOST }}"
+            export APP_PORT="${{ vars.APP_PORT }}"
+            export OAUTH_CLIENT_ID="${{ vars.OAUTH_CLIENT_ID }}"
+            export OAUTH_CLIENT_SECRET="${{ secrets.OAUTH_CLIENT_SECRET }}"
+            export IOT_API_USERNAME="${{ vars.IOT_API_USERNAME }}"
+            export IOT_API_PASSWORD="${{ secrets.IOT_API_PASSWORD }}"
+            export DEVICE_1_USERNAME="${{ vars.DEVICE_1_USERNAME }}"
+            export DEVICE_1_PASSWORD="${{ secrets.DEVICE_1_PASSWORD }}"
+            export DEVICE_2_USERNAME="${{ vars.DEVICE_2_USERNAME }}"
+            export DEVICE_2_PASSWORD="${{ secrets.DEVICE_2_PASSWORD }}"
+            export DEVICE_3_USERNAME="${{ vars.DEVICE_3_USERNAME }}"
+            export DEVICE_3_PASSWORD="${{ secrets.DEVICE_3_PASSWORD }}"
+            export DEVICE_4_USERNAME="${{ vars.DEVICE_4_USERNAME }}"
+            export DEVICE_4_PASSWORD="${{ secrets.DEVICE_4_PASSWORD }}"
+            export DEVICE_5_USERNAME="${{ vars.DEVICE_5_USERNAME }}"
+            export DEVICE_5_PASSWORD="${{ secrets.DEVICE_5_PASSWORD }}"
+
+            cd "$PROJECT_DIR"
+            docker login ${{ env.REGISTRY }} -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+
+            # Generate docker compose file
+            docker compose -p "prod" --project-directory . -f ./deploy/docker-compose.yml config > docker-compose.yml
+
+            # Clean files
+            rm -rf ./config
+
+            # Pull Docker image et restart
+            docker compose -f ./docker-compose.yml up --force-recreate --remove-orphans -d --wait --wait-timeout 60
+
+            echo "=== Deploy finished at $(date '+%Y-%m-%d %H:%M:%S') ==="

@@ -1,0 +1,23 @@
+name: Global IoT API Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  IMAGE_NAME: aureprod/iot-api
+  REGISTRY: ghcr.io
+
+jobs:
+  # Call build and scan workflow
+  ci:
+    uses: ./.github/workflows/build-scan.yml
+    secrets: inherit # Transmet secret (GITHUB_TOKEN, etc.)
+
+  # Call deploy workflow (only if build success)
+  cd:
+    needs: ci
+    uses: ./.github/workflows/deploy.yml
+    with:
+      image_name: aureprod/iot-api
+    secrets: inherit
