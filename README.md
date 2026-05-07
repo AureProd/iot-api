@@ -1,22 +1,28 @@
 ![CI/CD Status](https://github.com/AureProd/iot-api/actions/workflows/main.yml/badge.svg)
 
-# IOT API
+# 🌐 IoT API Server
 
-IOT API to manage ESP-32 custom connected devices with Google Home tool
+An IoT API designed to manage custom ESP-32 connected devices using Google Home integration.
 
-## To setup local env
+## 💻 Local Environment Setup
+
+Run the automated setup script to generate your local environment variables (`.env`) and a customized Docker Compose file (which includes a Traefik reverse proxy):
 
 ```bash
 # To generate local .env file and local docker-compose file (with self traefik RP)
 ./setup
 ```
 
-Here are the commands to install your development environment :
+Next, install your Python development environment and dependencies :
 
 ```bash
 # To install Python dependencies
 uv sync --dev
+```
 
+Initialize and run the codebase linters to maintain code quality :
+
+```bash
 # To initialize codebase linters
 uv run pre-commit install
 
@@ -24,21 +30,23 @@ uv run pre-commit install
 uv run pre-commit run -a
 ```
 
-## To manage local env instance
+## 🐳 Docker Container Management
+
+Use the following commands to control your local API instance using Docker Compose:
 
 ```bash
-# To build docker images
+# To build Docker images
 docker compose build
 
-# To start Drawio app server
+# To start API server in the background
 docker compose up -d
 
-# To restart Drawio app server with rebuild image to update changed files
+# To rebuild and apply recent file changes
 docker compose up -d --build
 
-# To shutdown Drawio app server
+# To stop and shut down the API server
 docker compose down
 
-# To see Drawio service logs
+# To see and follow API service logs in real-time
 docker compose logs -f api
 ```
