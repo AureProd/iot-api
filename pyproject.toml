@@ -9,7 +9,7 @@ dependencies = [
     "pydantic>=2.12.5",
     "pyjwt>=2.12.1",
     "redis>=7.4.0",
-    "python-multipart>=0.0.26",
+    "python-multipart>=0.0.27",
     "cryptography>=46.0.7",
     "aiomqtt>=2.5.1",
 ]
