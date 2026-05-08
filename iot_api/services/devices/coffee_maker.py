@@ -70,7 +70,10 @@ class CoffeeMakerStrategy(DeviceStrategy):
         await mqtt_client.publish(topic, json.dumps(payload))
         logger.info(f"Command {'ON' if status else 'OFF'} sent to Coffee Maker {device_id}")
 
-        return {"on": True, "online": True, "isRunning": status, "isPaused": not status}
+        if status:
+            return {"on": True, "online": True, "isRunning": True, "isPaused": False}
+        else:
+            return {"on": False, "online": True, "isRunning": False, "isPaused": False}
 
     async def setup_subscriptions(self, mqtt_client: MQTTClient, redis_client: RedisClient) -> None:
         """Subscribe to both run state and ready state updates for Coffee Makers."""
