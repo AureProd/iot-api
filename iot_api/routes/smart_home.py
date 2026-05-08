@@ -1,3 +1,4 @@
+import json
 import logging
 from collections import defaultdict
 from typing import Any
@@ -66,7 +67,7 @@ async def smart_home_handler(
     # --- EXECUTE intent: Used by Google to send commands (e.g., Turn On/Off) ---
     if requested_action == "action.devices.EXECUTE":
         commands: list[dict] = inputs[0]["payload"]["commands"]
-        success_ids_by_states: dict[dict[str, Any], list[str]] = defaultdict(list)
+        success_ids_by_states: dict[str, list[str]] = defaultdict(list)
         failed_ids_by_exc: dict[str, list[str]] = defaultdict(list)
 
         for cmd in commands:
@@ -96,14 +97,14 @@ async def smart_home_handler(
                                 failed_ids_by_exc[str(exc)].append(device_id)
                             else:
                                 status = await strategy.get_status(redis_client, device_id)
-                                success_ids_by_states[status].append(device_id)
+                                success_ids_by_states[json.dumps(status)].append(device_id)
 
         # Build the response payload
-        response_commands = []
+        response_commands: list[dict[str, Any]] = []
 
         # Add successfully executed devices
-        for status, success_ids in success_ids_by_states.items():
-            response_commands.append({"ids": success_ids, "status": "SUCCESS", "states": status})
+        for encoded_status, success_ids in success_ids_by_states.items():
+            response_commands.append({"ids": success_ids, "status": "SUCCESS", "states": json.loads(encoded_status)})
 
         # Add devices that failed execution along with their error codes
         for exc_code, failed_ids in failed_ids_by_exc.items():
