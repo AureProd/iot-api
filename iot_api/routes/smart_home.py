@@ -40,7 +40,9 @@ async def smart_home_handler(
             # Clean property access using dot notation (device.id, device.name)
             devices_config.append(strategy.get_config(device.id, device.name))
 
-        return {"requestId": request_id, "payload": {"agentUserId": user_id, "devices": devices_config}}
+        response = {"requestId": request_id, "payload": {"agentUserId": user_id, "devices": devices_config}}
+        logger.warning(f"Smart home request input '{payload}' response '{response}'")
+        return response
 
     # --- QUERY intent: Used by Google to get the current state of devices ---
     if requested_action == "action.devices.QUERY":
@@ -57,7 +59,9 @@ async def smart_home_handler(
                 strategy = DeviceRegistry.get_strategy(device_info.type)
                 device_states[device_id] = await strategy.get_status(redis_client, device_id)
 
-        return {"requestId": request_id, "payload": {"devices": device_states}}
+        response = {"requestId": request_id, "payload": {"devices": device_states}}
+        logger.warning(f"Smart home request input '{payload}' response '{response}'")
+        return response
 
     # --- EXECUTE intent: Used by Google to send commands (e.g., Turn On/Off) ---
     if requested_action == "action.devices.EXECUTE":
@@ -107,7 +111,11 @@ async def smart_home_handler(
                 }
             )
 
-        return {"requestId": request_id, "payload": {"commands": response_commands}}
+        response = {"requestId": request_id, "payload": {"commands": response_commands}}
+        logger.warning(f"Smart home request input '{payload}' response '{response}'")
+        return response
 
     # Default fallback response for unsupported intents
-    return {"requestId": request_id, "payload": {}}
+    response = {"requestId": request_id, "payload": {}}
+    logger.warning(f"Smart home request input '{payload}' response '{response}'")
+    return response
