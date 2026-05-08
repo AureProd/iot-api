@@ -20,20 +20,10 @@ class CoffeeMakerStrategy(DeviceStrategy):
             "traits": [
                 "action.devices.traits.OnOff",
                 "action.devices.traits.StatusReport",
-                "action.devices.traits.Toggles",
             ],
             "willReportState": True,
             "attributes": {
                 "statusReportReadOnly": True,
-                "availableToggles": [
-                    {
-                        "name": "CoffeeReady",
-                        "name_values": [
-                            {"name_synonym": ["Prêt", "Niveau d'eau"], "lang": "fr"},
-                            {"name_synonym": ["Ready", "Water level"], "lang": "en"},
-                        ],
-                    }
-                ],
             },
         }
 
@@ -59,14 +49,12 @@ class CoffeeMakerStrategy(DeviceStrategy):
                     "on": False,
                     "online": True,
                     "currentStatusReport": [{"blocking": True, "priority": 0, "statusCode": "needsWater"}],
-                    "currentToggleSettings": {"CoffeeReady": False},
                 }
 
             return {
                 "on": is_started,
                 "online": True,
                 "currentStatusReport": [],
-                "currentToggleSettings": {"CoffeeReady": True},
             }
         except TimeoutError:
             logger.warning(f"Coffee Maker {device_id} is offline.")
