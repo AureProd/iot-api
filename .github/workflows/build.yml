@@ -22,14 +22,14 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3.3.0
         with:
           registry: ${{ inputs.registry }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & Push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./config/Dockerfile
@@ -37,7 +37,7 @@ jobs:
           tags: ${{ inputs.registry }}/${{ inputs.image_name }}:${{ github.sha }}
 
       - name: Run Trivy scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           image-ref: '${{ inputs.registry }}/${{ inputs.image_name }}:${{ github.sha }}'
           format: 'table'
