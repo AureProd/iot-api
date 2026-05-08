@@ -84,6 +84,7 @@ async def smart_home_handler(
                                 await strategy.execute_command(redis_client, mqtt_client, device_id, target_state)
                                 success_ids.append(device_id)
                             except ValueError as exc:
+                                logger.warning(f"An error has occured with device command: '{str(exc)}'")
                                 # Group failed devices by their specific error code (e.g., 'needsWater')
                                 failed_by_error[str(exc)].append(device_id)
 
