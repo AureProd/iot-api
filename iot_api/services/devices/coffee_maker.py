@@ -46,8 +46,11 @@ class CoffeeMakerStrategy(DeviceStrategy):
             return {"on": False, "online": False}
 
     async def execute_command(
-        self, redis_client: RedisClient, mqtt_client: MQTTClient, device_id: str, status: bool
+        self, redis_client: RedisClient, mqtt_client: MQTTClient, device_id: str, target_state_type: str, status: bool
     ) -> dict[str, Any]:
+        if target_state_type != "StartStop":
+            raise ValueError("actionNotAvailable")
+
         run_topic = config.REDIS_COFFEE_MAKER_RUN_STATUS_TOPIC.format(device_id)
         ready_topic = config.REDIS_COFFEE_MAKER_READY_STATUS_TOPIC.format(device_id)
 

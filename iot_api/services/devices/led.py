@@ -37,8 +37,11 @@ class LedStrategy(DeviceStrategy):
             return {"on": False, "online": False}
 
     async def execute_command(
-        self, redis_client: RedisClient, mqtt_client: MQTTClient, device_id: str, status: bool
+        self, redis_client: RedisClient, mqtt_client: MQTTClient, device_id: str, target_state_type: str, status: bool
     ) -> dict[str, Any]:
+        if target_state_type != "OnOff":
+            raise ValueError("actionNotAvailable")
+
         logger.info(f"Sending command to LED {device_id}: {'ON' if status else 'OFF'}")
         topic = config.MQTT_LED_COMMAND_TOPIC.format(device_id)
 

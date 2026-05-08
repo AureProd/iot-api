@@ -74,6 +74,7 @@ async def smart_home_handler(
             for ex in cmd.get("execution", []):
                 # Currently only handling OnOff commands
                 if ex["command"] in ["action.devices.commands.OnOff", "action.devices.commands.StartStop"]:
+                    target_state_type = "OnOff" if ex["command"] == "action.devices.commands.OnOff" else "StartStop"
                     target_state = (
                         bool(ex["params"]["on"])
                         if ex["command"] == "action.devices.commands.OnOff"
@@ -90,7 +91,7 @@ async def smart_home_handler(
                             strategy = DeviceRegistry.get_strategy(device_info.type)
                             try:
                                 status = await strategy.execute_command(
-                                    redis_client, mqtt_client, device_id, target_state
+                                    redis_client, mqtt_client, device_id, target_state_type, target_state
                                 )
                             except ValueError as exc:
                                 logger.warning(f"An error has occured with device command: '{str(exc)}'")

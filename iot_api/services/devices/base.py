@@ -30,7 +30,7 @@ class DeviceStrategy(ABC):
 
     @abstractmethod
     async def execute_command(
-        self, redis_client: RedisClient, mqtt_client: MQTTClient, device_id: str, status: bool
+        self, redis_client: RedisClient, mqtt_client: MQTTClient, device_id: str, target_state_type: str, status: bool
     ) -> dict[str, Any]:
         """
         Executes an On/Off command to change the device state.
