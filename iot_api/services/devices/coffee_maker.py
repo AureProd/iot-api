@@ -37,13 +37,18 @@ class CoffeeMakerStrategy(DeviceStrategy):
             is_started = int(run_status) == 1
             is_ready = int(ready_status) == 1
 
-            status_report = []
-
             # If the machine is not ready (e.g., missing water), notify Google Home
             if not is_ready:
-                status_report.append({"blocking": True, "priority": 0, "statusCode": "needsWater"})
+                return {
+                    "on": is_started,
+                    "online": True,
+                    "status": "EXCEPTIONS",
+                    "currentStatusReport": [
+                        {"blocking": True, "deviceTarget": device_id, "priority": 0, "statusCode": "needsWater"}
+                    ],
+                }
 
-            return {"on": is_started, "online": True, "currentStatusReport": status_report}
+            return {"on": is_started, "online": True}
         except TimeoutError:
             logger.warning(f"Coffee Maker {device_id} is offline.")
             return {"on": False, "online": False}

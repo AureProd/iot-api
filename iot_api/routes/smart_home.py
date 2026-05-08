@@ -99,7 +99,20 @@ async def smart_home_handler(
 
         # Add devices that failed execution along with their error codes
         for exc_code, failed_ids in failed_ids_by_exc.items():
-            response_commands.append({"ids": failed_ids, "status": "EXCEPTIONS", "errorCode": exc_code})
+            response_commands.append(
+                {
+                    "ids": failed_ids,
+                    "status": "EXCEPTIONS",
+                    "states": {
+                        "on": False,
+                        "online": True,
+                        "currentStatusReport": [
+                            {"blocking": True, "deviceTarget": failed_id, "priority": 0, "statusCode": exc_code}
+                            for failed_id in failed_ids
+                        ],
+                    },
+                }
+            )
 
         return {"requestId": request_id, "payload": {"commands": response_commands}}
 
