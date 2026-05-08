@@ -29,8 +29,8 @@ class CoffeeMakerStrategy(DeviceStrategy):
                     {
                         "name": "CoffeeReady",
                         "name_values": [
-                            {"name_synonym": ["Prêt", "Pas Prêt", "Pas prêt", "prêt", "pas prêt"], "lang": "fr"},
-                            {"name_synonym": ["Ready", "Not Ready", "Not ready", "ready", "not_ready"], "lang": "en"},
+                            {"name_synonym": ["Prêt", "Pas Prêt"], "lang": "fr"},
+                            {"name_synonym": ["Ready", "Not Ready"], "lang": "en"},
                         ],
                     }
                 ],
@@ -52,8 +52,6 @@ class CoffeeMakerStrategy(DeviceStrategy):
             is_started = int(run_status) == 1
             is_ready = int(ready_status) == 1
 
-            sensor_state_value = "ready" if is_ready else "not_ready"
-
             # If the machine is not ready (e.g., missing water), notify Google Home
             if not is_ready:
                 logger.warning(f"Coffee Maker {device_id} is not ready.")
@@ -61,7 +59,7 @@ class CoffeeMakerStrategy(DeviceStrategy):
                     "on": False,
                     "online": True,
                     "currentStatusReport": [{"blocking": True, "priority": 0, "statusCode": "needsWater"}],
-                    "currentSensorStateData": [{"name": "CoffeeReady", "currentSensorState": sensor_state_value}],
+                    "currentToggleSettings": {"CoffeeReady": False},
                 }
 
             return {
