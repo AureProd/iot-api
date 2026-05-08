@@ -25,9 +25,14 @@ class CoffeeMakerStrategy(DeviceStrategy):
             "willReportState": True,
             "attributes": {
                 "statusReportReadOnly": True,
-                "name_values": [
-                    {"name_synonym": ["Prêt", "Niveau d'eau"], "lang": "fr"},
-                    {"name_synonym": ["Ready", "Water level"], "lang": "en"},
+                "availableToggles": [
+                    {
+                        "name": "CoffeeReady",
+                        "name_values": [
+                            {"name_synonym": ["Prêt", "Niveau d'eau"], "lang": "fr"},
+                            {"name_synonym": ["Ready", "Water level"], "lang": "en"},
+                        ],
+                    }
                 ],
             },
         }
