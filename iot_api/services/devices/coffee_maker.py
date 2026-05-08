@@ -17,9 +17,18 @@ class CoffeeMakerStrategy(DeviceStrategy):
             "id": device_id,
             "name": {"name": device_name},
             "type": "action.devices.types.COFFEE_MAKER",
-            "traits": ["action.devices.traits.OnOff", "action.devices.traits.StatusReport"],
+            "traits": [
+                "action.devices.traits.OnOff",
+                "action.devices.traits.StatusReport",
+                "action.devices.traits.SensorState",
+            ],
             "willReportState": True,
-            "attributes": {"statusReportReadOnly": True},
+            "attributes": {
+                "statusReportReadOnly": True,
+                "sensorStatesSupported": [
+                    {"name": "CoffeeReady", "descriptiveCapabilities": {"availableStates": ["ready", "not_ready"]}}
+                ],
+            },
         }
 
     async def get_status(self, redis_client: RedisClient, device_id: str) -> Dict[str, Any]:
@@ -37,35 +46,23 @@ class CoffeeMakerStrategy(DeviceStrategy):
             is_started = int(run_status) == 1
             is_ready = int(ready_status) == 1
 
+            sensor_state_value = "ready" if is_ready else "not_ready"
+
             # If the machine is not ready (e.g., missing water), notify Google Home
             if not is_ready:
                 logger.warning(f"Coffee Maker {device_id} is not ready.")
                 return {
                     "on": False,
                     "online": True,
-                    "currentStatusReport": [
-                        {
-                            "author": "ESP 32",
-                            "deviceTarget": device_id,
-                            "priority": 0,
-                            "status": "FAILURE",
-                            "statusCode": "needsWater",
-                        }
-                    ],
+                    "currentStatusReport": [{"blocking": True, "priority": 0, "statusCode": "needsWater"}],
+                    "currentSensorStateData": [{"name": "CoffeeReady", "currentSensorState": sensor_state_value}],
                 }
 
             return {
                 "on": is_started,
                 "online": True,
-                "currentStatusReport": [
-                    {
-                        "author": "ESP 32",
-                        "deviceTarget": device_id,
-                        "priority": 0,
-                        "status": "SUCCESS",
-                        "statusCode": "needsWater",
-                    }
-                ],
+                "currentStatusReport": [],
+                "currentSensorStateData": [{"name": "CoffeeReady", "currentSensorState": sensor_state_value}],
             }
         except TimeoutError:
             logger.warning(f"Coffee Maker {device_id} is offline.")
@@ -88,7 +85,7 @@ class CoffeeMakerStrategy(DeviceStrategy):
             if not is_ready:
                 logger.error(f"Cannot start Coffee Maker {device_id}: needs water.")
                 # This exception is caught by the router to send an error back to Google
-                raise ValueError("deviceWaterShortage")
+                raise ValueError("needsWater")
 
         topic = config.MQTT_COFFEE_MAKER_COMMAND_TOPIC.format(device_id)
         payload = {"id": device_id, "status": 1 if status else 0}

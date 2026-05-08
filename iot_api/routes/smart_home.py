@@ -106,8 +106,12 @@ async def smart_home_handler(
             response_commands.append(
                 {
                     "ids": failed_ids,
-                    "status": "ERROR",
-                    "errorCode": exc_code,
+                    "status": "EXCEPTIONS",
+                    "states": {
+                        "on": False,
+                        "online": True,
+                        "currentStatusReport": [{"blocking": True, "priority": 0, "statusCode": exc_code}],
+                    },
                 }
             )
 
