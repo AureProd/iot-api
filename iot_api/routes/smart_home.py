@@ -63,7 +63,7 @@ async def smart_home_handler(
     if requested_action == "action.devices.EXECUTE":
         commands: list[dict] = inputs[0]["payload"]["commands"]
         success_ids: list[str] = []
-        failed_by_error: dict[str, list[str]] = defaultdict(list)
+        failed_ids_by_exc: dict[str, list[str]] = defaultdict(list)
         target_state = False
 
         for cmd in commands:
@@ -86,7 +86,7 @@ async def smart_home_handler(
                             except ValueError as exc:
                                 logger.warning(f"An error has occured with device command: '{str(exc)}'")
                                 # Group failed devices by their specific error code (e.g., 'needsWater')
-                                failed_by_error[str(exc)].append(device_id)
+                                failed_ids_by_exc[str(exc)].append(device_id)
 
         # Build the response payload
         response_commands = []
@@ -98,8 +98,8 @@ async def smart_home_handler(
             )
 
         # Add devices that failed execution along with their error codes
-        for exc_code, failed_ids in failed_by_error.items():
-            response_commands.append({"ids": failed_ids, "status": "ERROR", "errorCode": exc_code})
+        for exc_code, failed_ids in failed_ids_by_exc.items():
+            response_commands.append({"ids": failed_ids, "status": "EXCEPTIONS", "errorCode": exc_code})
 
         return {"requestId": request_id, "payload": {"commands": response_commands}}
 
