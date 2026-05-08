@@ -19,22 +19,10 @@ class CoffeeMakerStrategy(DeviceStrategy):
             "type": "action.devices.types.COFFEE_MAKER",
             "traits": [
                 "action.devices.traits.OnOff",
-                "action.devices.traits.StatusReport",
-                "action.devices.traits.Toggles",
+                "action.devices.traits.StartStop",
             ],
             "willReportState": True,
-            "attributes": {
-                "statusReportReadOnly": True,
-                "availableToggles": [
-                    {
-                        "name": "CoffeeReady",
-                        "name_values": [
-                            {"name_synonym": ["Prêt", "Pas Prêt"], "lang": "fr"},
-                            {"name_synonym": ["Ready", "Not Ready"], "lang": "en"},
-                        ],
-                    }
-                ],
-            },
+            "attributes": {"pausable": False, "availableZones": [], "queryOnlyOnOff": True, "commandOnlyOnOff": False},
         }
 
     async def get_status(self, redis_client: RedisClient, device_id: str) -> Dict[str, Any]:
@@ -52,22 +40,7 @@ class CoffeeMakerStrategy(DeviceStrategy):
             is_started = int(run_status) == 1
             is_ready = int(ready_status) == 1
 
-            # If the machine is not ready (e.g., missing water), notify Google Home
-            if not is_ready:
-                logger.warning(f"Coffee Maker {device_id} is not ready.")
-                return {
-                    "on": False,
-                    "online": True,
-                    "currentStatusReport": [{"blocking": True, "priority": 0, "statusCode": "needsWater"}],
-                    "currentToggleSettings": {"CoffeeReady": False},
-                }
-
-            return {
-                "on": is_started,
-                "online": True,
-                "currentStatusReport": [],
-                "currentToggleSettings": {"CoffeeReady": True},
-            }
+            return {"on": is_ready, "online": True, "isRunning": is_started, "isPaused": not is_started}
         except TimeoutError:
             logger.warning(f"Coffee Maker {device_id} is offline.")
             return {"on": False, "online": False}
@@ -87,9 +60,9 @@ class CoffeeMakerStrategy(DeviceStrategy):
         # Attempting to turn ON a stopped machine
         if status and not is_started:
             if not is_ready:
-                logger.error(f"Cannot start Coffee Maker {device_id}: needs water.")
+                logger.error(f"Cannot start coffee-maker {device_id}, device not ready")
                 # This exception is caught by the router to send an error back to Google
-                raise ValueError("needsWater")
+                raise ValueError("deviceNotReady")
 
         topic = config.MQTT_COFFEE_MAKER_COMMAND_TOPIC.format(device_id)
         payload = {"id": device_id, "status": 1 if status else 0}

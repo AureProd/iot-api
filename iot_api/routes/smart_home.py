@@ -66,15 +66,18 @@ async def smart_home_handler(
     # --- EXECUTE intent: Used by Google to send commands (e.g., Turn On/Off) ---
     if requested_action == "action.devices.EXECUTE":
         commands: list[dict] = inputs[0]["payload"]["commands"]
-        success_ids: list[str] = []
+        success_ids_by_states: dict[dict[str, Any], list[str]] = defaultdict(list)
         failed_ids_by_exc: dict[str, list[str]] = defaultdict(list)
-        target_state = False
 
         for cmd in commands:
             for ex in cmd.get("execution", []):
                 # Currently only handling OnOff commands
-                if ex["command"] == "action.devices.commands.OnOff":
-                    target_state = bool(ex["params"]["on"])
+                if ex["command"] in ["action.devices.commands.OnOff", "action.devices.commands.StartStop"]:
+                    target_state = (
+                        bool(ex["params"]["on"])
+                        if ex["command"] == "action.devices.commands.OnOff"
+                        else bool(ex["params"]["start"])
+                    )
 
                     for payload_device in cmd.get("devices", []):
                         device_id = str(payload_device["id"])
@@ -83,37 +86,28 @@ async def smart_home_handler(
                         device_info = config.DEVICES.get(device_id)
 
                         if device_info:
+                            strategy = DeviceRegistry.get_strategy(device_info.type)
                             try:
-                                strategy = DeviceRegistry.get_strategy(device_info.type)
                                 await strategy.execute_command(redis_client, mqtt_client, device_id, target_state)
-                                success_ids.append(device_id)
+
                             except ValueError as exc:
                                 logger.warning(f"An error has occured with device command: '{str(exc)}'")
                                 # Group failed devices by their specific error code (e.g., 'needsWater')
                                 failed_ids_by_exc[str(exc)].append(device_id)
+                            else:
+                                status = await strategy.get_status(redis_client, device_id)
+                                success_ids_by_states[status].append(device_id)
 
         # Build the response payload
         response_commands = []
 
         # Add successfully executed devices
-        if success_ids:
-            response_commands.append(
-                {"ids": success_ids, "status": "SUCCESS", "states": {"on": target_state, "online": True}}
-            )
+        for status, success_ids in success_ids_by_states.items():
+            response_commands.append({"ids": success_ids, "status": "SUCCESS", "states": status})
 
         # Add devices that failed execution along with their error codes
         for exc_code, failed_ids in failed_ids_by_exc.items():
-            response_commands.append(
-                {
-                    "ids": failed_ids,
-                    "status": "EXCEPTIONS",
-                    "states": {
-                        "on": False,
-                        "online": True,
-                        "currentStatusReport": [{"blocking": True, "priority": 0, "statusCode": exc_code}],
-                    },
-                }
-            )
+            response_commands.append({"ids": failed_ids, "status": "ERROR", "errorCode": exc_code})
 
         response = {"requestId": request_id, "payload": {"commands": response_commands}}
         logger.warning(f"Smart home request input '{payload}' response '{response}'")
