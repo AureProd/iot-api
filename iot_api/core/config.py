@@ -50,7 +50,6 @@ DEVICES_LIST: list[DeviceConfig] = [
     DeviceConfig(id="led-01", name="PC LED", type="led"),
     DeviceConfig(id="led-03", name="COOK LED", type="led"),
     DeviceConfig(id="coffee-maker-01", name="COFFEE MAKER", type="coffee-maker"),
-    DeviceConfig(id="coffee-maker-status-01", name="COFFEE MAKER READY", type="coffee-maker-ready-sensor"),
 ]
 
 # Dictionary comprehension to create a fast-lookup dictionary (O(1) access time) keyed by device ID.

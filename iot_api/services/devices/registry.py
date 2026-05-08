@@ -1,6 +1,5 @@
 from iot_api.services.devices.base import DeviceStrategy
 from iot_api.services.devices.coffee_maker import CoffeeMakerStrategy
-from iot_api.services.devices.coffee_maker_ready_sensor import CoffeeMakerReadySensorStrategy
 from iot_api.services.devices.led import LedStrategy
 
 
@@ -13,7 +12,6 @@ class DeviceRegistry:
     _strategies: dict[str, DeviceStrategy] = {
         "led": LedStrategy(),
         "coffee-maker": CoffeeMakerStrategy(),
-        "coffee-maker-ready-sensor": CoffeeMakerReadySensorStrategy(),
     }
 
     @classmethod

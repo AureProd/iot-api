@@ -11,4 +11,4 @@ class DeviceConfig(BaseModel):
 
     id: str
     name: str
-    type: Literal["led", "coffee-maker", "coffee-maker-ready-sensor"]  # Strict validation for allowed device types
+    type: Literal["led", "coffee-maker"]  # Strict validation for allowed device types
