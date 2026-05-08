@@ -99,16 +99,11 @@ async def smart_home_handler(
 
         # Add devices that failed execution along with their error codes
         for exc_code, failed_ids in failed_ids_by_exc.items():
-            if exc_code != "needsWater":
-                logger.warning(f"Other error present: '{exc_code}'")
-                continue
-
             response_commands.append(
                 {
                     "ids": failed_ids,
                     "status": "ERROR",
-                    "states": {"on": False, "online": True},
-                    "errorCode": "needsWater",
+                    "errorCode": exc_code,
                 }
             )
 

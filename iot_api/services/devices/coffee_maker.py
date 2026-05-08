@@ -19,6 +19,7 @@ class CoffeeMakerStrategy(DeviceStrategy):
             "type": "action.devices.types.COFFEE_MAKER",
             "traits": ["action.devices.traits.OnOff", "action.devices.traits.StatusReport"],
             "willReportState": True,
+            "attributes": {"statusReportReadOnly": True},
         }
 
     async def get_status(self, redis_client: RedisClient, device_id: str) -> Dict[str, Any]:
@@ -43,14 +44,32 @@ class CoffeeMakerStrategy(DeviceStrategy):
                     "on": False,
                     "online": True,
                     "currentStatusReport": [
-                        {"blocking": True, "deviceTarget": device_id, "priority": 0, "statusCode": "needsWater"}
+                        {
+                            "author": "ESP 32",
+                            "deviceTarget": device_id,
+                            "priority": 0,
+                            "status": "FAILURE",
+                            "statusCode": "needsWater",
+                        }
                     ],
                 }
 
-            return {"on": is_started, "online": True}
+            return {
+                "on": is_started,
+                "online": True,
+                "currentStatusReport": [
+                    {
+                        "author": "ESP 32",
+                        "deviceTarget": device_id,
+                        "priority": 0,
+                        "status": "SUCCESS",
+                        "statusCode": "needsWater",
+                    }
+                ],
+            }
         except TimeoutError:
             logger.warning(f"Coffee Maker {device_id} is offline.")
-            return {"on": False, "online": False}
+            return {"on": False, "online": False, "currentStatusReport": []}
 
     async def execute_command(
         self, redis_client: RedisClient, mqtt_client: MQTTClient, device_id: str, status: bool
@@ -69,7 +88,7 @@ class CoffeeMakerStrategy(DeviceStrategy):
             if not is_ready:
                 logger.error(f"Cannot start Coffee Maker {device_id}: needs water.")
                 # This exception is caught by the router to send an error back to Google
-                raise ValueError("needsWater")
+                raise ValueError("deviceWaterShortage")
 
         topic = config.MQTT_COFFEE_MAKER_COMMAND_TOPIC.format(device_id)
         payload = {"id": device_id, "status": 1 if status else 0}
