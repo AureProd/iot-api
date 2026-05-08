@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout for config files
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Copy config to server
         uses: appleboy/scp-action@v0.1.7
