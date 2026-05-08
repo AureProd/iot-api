@@ -18,7 +18,6 @@ class CoffeeMakerStrategy(DeviceStrategy):
             "name": {"name": device_name},
             "type": "action.devices.types.COFFEE_MAKER",
             "traits": ["action.devices.traits.OnOff", "action.devices.traits.StatusReport"],
-            "attributes": {"pausable": False},
             "willReportState": True,
         }
 
@@ -39,10 +38,10 @@ class CoffeeMakerStrategy(DeviceStrategy):
 
             # If the machine is not ready (e.g., missing water), notify Google Home
             if not is_ready:
+                logger.warning(f"Coffee Maker {device_id} is not ready.")
                 return {
-                    "on": is_started,
+                    "on": False,
                     "online": True,
-                    "status": "EXCEPTIONS",
                     "currentStatusReport": [
                         {"blocking": True, "deviceTarget": device_id, "priority": 0, "statusCode": "needsWater"}
                     ],
