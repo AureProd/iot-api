@@ -38,13 +38,15 @@ class LedStrategy(DeviceStrategy):
 
     async def execute_command(
         self, redis_client: RedisClient, mqtt_client: MQTTClient, device_id: str, status: bool
-    ) -> None:
+    ) -> dict[str, Any]:
         logger.info(f"Sending command to LED {device_id}: {'ON' if status else 'OFF'}")
         topic = config.MQTT_LED_COMMAND_TOPIC.format(device_id)
 
         payload = {"id": device_id, "status": 1 if status else 0}
 
         await mqtt_client.publish(topic, json.dumps(payload))
+
+        return {"on": status, "online": True}
 
     async def setup_subscriptions(self, mqtt_client: MQTTClient, redis_client: RedisClient) -> None:
         """Subscribe to LED status updates from MQTT."""

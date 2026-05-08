@@ -31,7 +31,7 @@ class DeviceStrategy(ABC):
     @abstractmethod
     async def execute_command(
         self, redis_client: RedisClient, mqtt_client: MQTTClient, device_id: str, status: bool
-    ) -> None:
+    ) -> dict[str, Any]:
         """
         Executes an On/Off command to change the device state.
         Should raise a ValueError with a specific error code (e.g., 'needsWater') if blocked.

@@ -89,14 +89,14 @@ async def smart_home_handler(
                         if device_info:
                             strategy = DeviceRegistry.get_strategy(device_info.type)
                             try:
-                                await strategy.execute_command(redis_client, mqtt_client, device_id, target_state)
-
+                                status = await strategy.execute_command(
+                                    redis_client, mqtt_client, device_id, target_state
+                                )
                             except ValueError as exc:
                                 logger.warning(f"An error has occured with device command: '{str(exc)}'")
                                 # Group failed devices by their specific error code (e.g., 'needsWater')
                                 failed_ids_by_exc[str(exc)].append(device_id)
                             else:
-                                status = await strategy.get_status(redis_client, device_id)
                                 success_ids_by_states[json.dumps(status)].append(device_id)
 
         # Build the response payload
