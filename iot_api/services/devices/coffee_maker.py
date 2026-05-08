@@ -20,13 +20,14 @@ class CoffeeMakerStrategy(DeviceStrategy):
             "traits": [
                 "action.devices.traits.OnOff",
                 "action.devices.traits.StatusReport",
-                "action.devices.traits.SensorState",
+                "action.devices.traits.Toggles",
             ],
             "willReportState": True,
             "attributes": {
                 "statusReportReadOnly": True,
-                "sensorStatesSupported": [
-                    {"name": "CoffeeReady", "descriptiveCapabilities": {"availableStates": ["ready", "not_ready"]}}
+                "name_values": [
+                    {"name_synonym": ["Prêt", "Niveau d'eau"], "lang": "fr"},
+                    {"name_synonym": ["Ready", "Water level"], "lang": "en"},
                 ],
             },
         }
@@ -46,8 +47,6 @@ class CoffeeMakerStrategy(DeviceStrategy):
             is_started = int(run_status) == 1
             is_ready = int(ready_status) == 1
 
-            sensor_state_value = "ready" if is_ready else "not_ready"
-
             # If the machine is not ready (e.g., missing water), notify Google Home
             if not is_ready:
                 logger.warning(f"Coffee Maker {device_id} is not ready.")
@@ -55,14 +54,14 @@ class CoffeeMakerStrategy(DeviceStrategy):
                     "on": False,
                     "online": True,
                     "currentStatusReport": [{"blocking": True, "priority": 0, "statusCode": "needsWater"}],
-                    "currentSensorStateData": [{"name": "CoffeeReady", "currentSensorState": sensor_state_value}],
+                    "currentToggleSettings": {"CoffeeReady": False},
                 }
 
             return {
                 "on": is_started,
                 "online": True,
                 "currentStatusReport": [],
-                "currentSensorStateData": [{"name": "CoffeeReady", "currentSensorState": sensor_state_value}],
+                "currentToggleSettings": {"CoffeeReady": True},
             }
         except TimeoutError:
             logger.warning(f"Coffee Maker {device_id} is offline.")
