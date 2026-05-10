@@ -40,7 +40,10 @@ class CoffeeMakerStrategy(DeviceStrategy):
             is_started = int(run_status) == 1
             is_ready = int(ready_status) == 1
 
-            return {"on": is_ready, "online": True, "isRunning": is_started, "isPaused": is_ready and not is_started}
+            if is_started:
+                return {"on": True, "online": True, "isRunning": is_started, "isPaused": False}
+
+            return {"on": is_ready, "online": True, "isRunning": False, "isPaused": is_ready}
         except TimeoutError:
             logger.warning(f"Coffee Maker {device_id} is offline.")
             return {"on": False, "online": False}
