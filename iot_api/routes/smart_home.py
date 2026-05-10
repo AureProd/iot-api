@@ -41,9 +41,7 @@ async def smart_home_handler(
             # Clean property access using dot notation (device.id, device.name)
             devices_config.append(strategy.get_config(device.id, device.name))
 
-        response = {"requestId": request_id, "payload": {"agentUserId": user_id, "devices": devices_config}}
-        logger.warning(f"Smart home request input '{payload}' response '{response}'")
-        return response
+        return {"requestId": request_id, "payload": {"agentUserId": user_id, "devices": devices_config}}
 
     # --- QUERY intent: Used by Google to get the current state of devices ---
     if requested_action == "action.devices.QUERY":
@@ -60,9 +58,7 @@ async def smart_home_handler(
                 strategy = DeviceRegistry.get_strategy(device_info.type)
                 device_states[device_id] = await strategy.get_status(redis_client, device_id)
 
-        response = {"requestId": request_id, "payload": {"devices": device_states}}
-        logger.warning(f"Smart home request input '{payload}' response '{response}'")
-        return response
+        return {"requestId": request_id, "payload": {"devices": device_states}}
 
     # --- EXECUTE intent: Used by Google to send commands (e.g., Turn On/Off) ---
     if requested_action == "action.devices.EXECUTE":
@@ -111,11 +107,7 @@ async def smart_home_handler(
         for exc_code, failed_ids in failed_ids_by_exc.items():
             response_commands.append({"ids": failed_ids, "status": "ERROR", "errorCode": exc_code})
 
-        response = {"requestId": request_id, "payload": {"commands": response_commands}}
-        logger.warning(f"Smart home request input '{payload}' response '{response}'")
-        return response
+        return {"requestId": request_id, "payload": {"commands": response_commands}}
 
     # Default fallback response for unsupported intents
-    response = {"requestId": request_id, "payload": {}}
-    logger.warning(f"Smart home request input '{payload}' response '{response}'")
-    return response
+    return {"requestId": request_id, "payload": {}}
