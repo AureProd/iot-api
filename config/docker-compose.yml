@@ -60,7 +60,7 @@ services:
       - reverse_proxy
     healthcheck:
       # Teste la connexion TLS sur le port 8883 en utilisant les credentials de l'API injectés.
-      test: ["CMD-SHELL", "mosquitto_pub -h 127.0.0.1 -p 8883 --cafile /mosquitto/certs/ca.crt --insecure -u ${IOT_API_USERNAME} -P ${IOT_API_PASSWORD} -t 'healthcheck' -m 'ping' || exit 1"]
+      test: ["CMD-SHELL", "mosquitto_pub -h 127.0.0.1 -p 8883 --cafile /mosquitto/certs/ca.crt --insecure -u ${DEVICE_5_USERNAME} -P ${DEVICE_5_PASSWORD} -t 'healthcheck' -m 'ping' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
