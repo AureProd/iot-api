@@ -21,7 +21,7 @@ class CoffeeMakerStrategy(DeviceStrategy):
                 "action.devices.traits.OnOff",
                 "action.devices.traits.StartStop",
             ],
-            "willReportState": True,
+            "willReportState": False,
             "attributes": {"pausable": False, "availableZones": [], "queryOnlyOnOff": True, "commandOnlyOnOff": False},
         }
 

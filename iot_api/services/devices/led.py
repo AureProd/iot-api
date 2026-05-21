@@ -19,7 +19,7 @@ class LedStrategy(DeviceStrategy):
             "name": {"name": device_name},
             "type": "action.devices.types.LIGHT",
             "traits": ["action.devices.traits.OnOff"],
-            "willReportState": True,
+            "willReportState": False,
         }
 
     async def get_status(self, redis_client: RedisClient, device_id: str) -> Dict[str, Any]:
