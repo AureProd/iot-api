@@ -2,13 +2,6 @@
 
 # Basic usage : ./setup.sh
 
-RP_DOCKER_COMPOSE_FILE="-f ./config/docker-compose-rp-override.yml"
-if [ ! -z "${1}" ]; then
-  if [[ "${1}" == "remote" ]]; then
-    RP_DOCKER_COMPOSE_FILE=""
-  fi
-fi
-
 ENV_FILE=.env
 if [ ! -f "${ENV_FILE}" ]; then
     cp ./config/.env.example .env
@@ -27,6 +20,16 @@ export APP_ENV="dev"
 export APP_SCHEME="http"
 export APP_HOST="localhost"
 export APP_PORT="8080"
+
+RP_DOCKER_COMPOSE_FILE="-f ./config/docker-compose-rp-override.yml"
+if [ ! -z "${1}" ]; then
+  if [[ "${1}" == "remote" ]]; then
+    RP_DOCKER_COMPOSE_FILE=""
+    export APP_SCHEME="https"
+    export APP_HOST="jbhuet.fr"
+    export APP_PORT="443"
+  fi
+fi
 
 export API_IMAGE="iot-api:${INSTANCE_NAME}"
 
