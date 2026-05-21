@@ -11,6 +11,9 @@ Run the automated setup script to generate your local environment variables (`.e
 ```bash
 # To generate local .env file and local docker-compose file (with self traefik RP)
 ./setup
+
+# To generate local .env file and local docker-compose file on remote server (without self traefik RP)
+./setup remote
 ```
 
 Next, install your Python development environment and dependencies :

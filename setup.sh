@@ -2,6 +2,13 @@
 
 # Basic usage : ./setup.sh
 
+RP_DOCKER_COMPOSE_FILE="-f ./config/docker-compose-rp-override.yml"
+if [ ! -z "${1}" ]; then
+  if [[ "${1}" == "remote" ]]; then
+    RP_DOCKER_COMPOSE_FILE=""
+  fi
+fi
+
 ENV_FILE=.env
 if [ ! -f "${ENV_FILE}" ]; then
     cp ./config/.env.example .env
@@ -79,7 +86,7 @@ fi
 
 ## Construct Docker Compose
 # We pass the override variable without quotes here so Bash treats the -f and the path as separate tokens
-docker compose -p "${INSTANCE_NAME}" --project-directory . -f ./config/docker-compose.yml -f ./config/docker-compose-dev-override.yml config > docker-compose.yml
+docker compose -p "${INSTANCE_NAME}" --project-directory . -f ./config/docker-compose.yml -f ./config/docker-compose-dev-override.yml $RP_DOCKER_COMPOSE_FILE config > docker-compose.yml
 
 # Sanitize absolute paths to relative paths
 sed -i -e "s#$(pwd)#.#g" docker-compose.yml
