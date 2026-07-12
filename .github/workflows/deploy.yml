@@ -25,7 +25,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           source: "config/"
-          target: "/home/${{ secrets.SERVER_USER }}/projects/iot"
+          target: "/home/${{ secrets.SERVER_USER }}/iot"
 
       - name: Remote SSH Deployment
         uses: appleboy/ssh-action@v1.2.0
@@ -37,7 +37,7 @@ jobs:
           script: |
             set -e
 
-            PROJECT_DIR="/home/${{ secrets.SERVER_USER }}/projects/iot"
+            PROJECT_DIR="/home/${{ secrets.SERVER_USER }}/iot"
             CERTS_DIR="$PROJECT_DIR/certs"
             API_CERTS_DIR="$CERTS_DIR/api"
             MQTT_CERTS_DIR="$CERTS_DIR/mqtt"
